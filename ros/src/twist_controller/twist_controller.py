@@ -23,7 +23,7 @@ class Controller(object):
         
         # PID parameters
         self.kp_t = 3.0
-        self.ki_t = 0.
+        self.ki_t = 0.1
         self.kd_t = 0.
         min_throttle = 0.0
         max_throttle = 0.2
