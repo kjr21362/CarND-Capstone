@@ -151,12 +151,12 @@ class TLDetector(object):
             dist = float('inf')
             for i, light in enumerate(self.lights):
                 line = stop_line_positions[i]
-                line_wp_idx = self.get_closest_waypoint(line[0], line[1])
-                d = line_wp_idx - car_wp_idx
+                cur_line_wp_idx = self.get_closest_waypoint(line[0], line[1])
+                d = cur_line_wp_idx - car_wp_idx
                 if d >= 0 and d < dist:
                     dist = d
                     closest_light = light
-                    light_wp_idx = i
+                    light_wp_idx = cur_line_wp_idx
                 
         if closest_light:
             state = self.get_light_state(closest_light)

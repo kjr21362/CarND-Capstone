@@ -44,7 +44,7 @@ class WaypointUpdater(object):
         self.base_waypoints = None
         self.waypoints_2d = None
         self.waypoint_tree = None
-        self.closest_line_idx = -1
+        self.stopline_wp_idx = -1
         
         #rospy.spin()
         self.loop()
@@ -79,25 +79,25 @@ class WaypointUpdater(object):
     
     def publish_waypoints(self, closest_idx):
         lane = Lane()
-        if self.closest_line_idx == -1:
+        if self.stopline_wp_idx == -1:
             lane.waypoints = self.base_waypoints.waypoints[closest_idx:closest_idx + LOOKAHEAD_WPS]
-        else:
-            rospy.loginfo("Closest_idx: %s, closest_line_idx: %s", closest_idx, self.closest_line_idx)
-            
-            line = self.stop_line_positions[self.closest_line_idx]
-            closest_line_wp_idx = self.get_closest_waypoint_idx(line[0], line[1])
-            if abs(closest_line_wp_idx - closest_idx) > 50:
+        else:           
+            rospy.loginfo("Closest_idx: %s, stopline_wp_idx: %s", closest_idx, self.stopline_wp_idx)
+            if self.stopline_wp_idx - closest_idx > LOOKAHEAD_WPS:
                 lane.waypoints = self.base_waypoints.waypoints[closest_idx:closest_idx + LOOKAHEAD_WPS]
             else:
-                for i in range(closest_idx, closest_line_wp_idx+1):
+                #for i in range(closest_idx, closest_line_wp_idx+1):
+                base_waypoints = self.base_waypoints.waypoints[closest_idx:self.stopline_wp_idx+1]
+                for i, wp in enumerate(base_waypoints):
                     p = Waypoint()
-                    p.pose = self.base_waypoints.waypoints[i].pose
-                    dist = self.distance(self.base_waypoints.waypoints, i, closest_line_wp_idx)
+                    p.pose = wp.pose
+                    dist = self.distance(base_waypoints, i, max(0, self.stopline_wp_idx-closest_idx))
+                    #dist = self.distance(base_waypoints, i, max(0, LOOKAHEAD_WPS))
                     vel = math.sqrt(2 * math.fabs(DECEL_LIMIT) * dist)
                     rospy.loginfo("dist: %s, vel: %s", dist, vel)
                     if vel < 1.0:
                         vel = 0.
-                    p.twist.twist.linear.x = vel
+                    p.twist.twist.linear.x = min(p.twist.twist.linear.x, vel)
                     lane.waypoints.append(p)
         self.final_waypoints_pub.publish(lane)
 
@@ -114,7 +114,7 @@ class WaypointUpdater(object):
 
     def traffic_cb(self, msg):
         # TODO: Callback for /traffic_waypoint message. Implement
-        self.closest_line_idx = msg.data
+        self.stopline_wp_idx = msg.data
         
     def get_waypoint_velocity(self, waypoint):
         return waypoint.twist.twist.linear.x
