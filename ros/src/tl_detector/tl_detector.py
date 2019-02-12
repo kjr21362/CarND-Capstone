@@ -55,7 +55,7 @@ class TLDetector(object):
         self.elipsed_time = 0
 
         rospy.spin()
-
+        
     def pose_cb(self, msg):
         self.pose = msg
 
