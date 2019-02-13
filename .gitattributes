@@ -1,0 +1,2 @@
+ros/src/tl_detector/frozen_inference_graph_sim_v1.4.pb filter=lfs diff=lfs merge=lfs -text
+ros/src/tl_detector/frozen_inference_graph_real_v1.4.pb filter=lfs diff=lfs merge=lfs -text
