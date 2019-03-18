@@ -8,9 +8,6 @@ import rospy
 class TLClassifier(object):
     def __init__(self):
         #TODO load classifier
-        #self.idx = 0
-        #if not os.path.exists('light_images_data/'):
-        #    os.mkdir('light_images_data/')
         self.light = TrafficLight.UNKNOWN
         self.category_index = {1: {'id': 1, 'name': 'Green'}, 2: {'id': 2, 'name': 'Red'},
                                3: {'id': 3, 'name': 'Yellow'}, 4: {'id': 4, 'name': 'off'}}
@@ -48,7 +45,7 @@ class TLClassifier(object):
         scores = np.squeeze(scores)
         classes = np.squeeze(classes).astype(np.int32)
         num = np.squeeze(num).astype(np.int32)
-        rospy.loginfo('get_classification: %s, %s, %s, %s', boxes, scores, classes, num)
+        #rospy.loginfo('get_classification: %s, %s, %s, %s', boxes, scores, classes, num)
         
         min_threshold = 0.5
         count_total = 0
@@ -66,11 +63,16 @@ class TLClassifier(object):
                 count_yellow += 1
         
         max_count = max(count_red, count_green, count_yellow)
+        s = 'UNKNOWN'
         if max_count > 0:
             if max_count == count_red:
                 self.light = TrafficLight.RED
+                s = 'Red'
             elif max_count == count_yellow:
                 self.light = TrafficLight.YELLOW
+                s = 'Yellow'
             elif max_count == count_green:
                 self.light = TrafficLight.GREEN
+                s = 'Green'
+        rospy.loginfo('Light: %s', s)
         return self.light

@@ -74,16 +74,21 @@ class TLDetector(object):
         Args:
             msg (Image): image from car-mounted camera
         """
-        current_time = rospy.get_time()
-        self.elipsed_time += (current_time - self.last_time)
-        self.last_time = current_time
-        if self.elipsed_time < 0.2:
-            return
+        #current_time = rospy.get_time()
+        #self.elipsed_time += (current_time - self.last_time)
+        #self.last_time = current_time
+        #if self.elipsed_time < 0.2:
+        #    return
         
-        self.elipsed_time = 0
+        #self.elipsed_time = 0
         self.has_image = True
         self.camera_image = msg
         light_wp, state = self.process_traffic_lights()
+        
+        # Testing with rosbag
+        #light_wp = light_wp if state == TrafficLight.RED else -1
+        #rospy.loginfo(light_wp)
+        #self.upcoming_red_light_pub.publish(Int32(light_wp))
 
         '''
         Publish upcoming red lights at camera frequency.
@@ -91,6 +96,7 @@ class TLDetector(object):
         of times till we start using it. Otherwise the previous stable state is
         used.
         '''
+        
         if self.state != state:
             self.state_count = 0
             self.state = state
@@ -102,6 +108,7 @@ class TLDetector(object):
         else:
             self.upcoming_red_light_pub.publish(Int32(self.last_wp))
         self.state_count += 1
+        
 
     def get_closest_waypoint(self, pose_x, pose_y):
         """Identifies the closest path waypoint to the given position
@@ -138,7 +145,8 @@ class TLDetector(object):
             int: index of waypoint closes to the upcoming stop line for a traffic light (-1 if none exists)
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
         """
-        
+        # only classify lights within this waypoint distance
+        dist_threshold = 200
         closest_light = None
         light_wp_idx = None
         # List of positions that correspond to the line to stop in front of for a given intersection
@@ -153,7 +161,7 @@ class TLDetector(object):
                 line = stop_line_positions[i]
                 cur_line_wp_idx = self.get_closest_waypoint(line[0], line[1])
                 d = cur_line_wp_idx - car_wp_idx
-                if d >= 0 and d < dist:
+                if d >= 0 and d < dist_threshold and d < dist:
                     dist = d
                     closest_light = light
                     light_wp_idx = cur_line_wp_idx
