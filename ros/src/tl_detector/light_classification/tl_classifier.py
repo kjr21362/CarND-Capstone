@@ -36,7 +36,8 @@ class TLClassifier(object):
         """
         #TODO implement light color prediction
         with self.detection_graph.as_default():
-            image_expanded = np.expand_dims(image, axis = 0)
+            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            image_expanded = np.expand_dims(image_rgb, axis = 0)
             (boxes, scores, classes, num) = self.sess.run(
                 [self.d_boxes, self.d_scores, self.d_classes, self.num_d],
                 feed_dict = {self.image_tensor: image_expanded})
@@ -57,22 +58,28 @@ class TLClassifier(object):
             class_name = self.category_index[classes[i]]['name']
             if class_name == 'Red':
                 count_red += 1
-            elif class_name == 'Green':
-                count_green += 1
-            elif class_name == 'Yellow':
-                count_yellow += 1
+            #elif class_name == 'Green':
+            #    count_green += 1
+            #elif class_name == 'Yellow':
+            #    count_yellow += 1
         
-        max_count = max(count_red, count_green, count_yellow)
+        #max_count = max(count_red, count_green, count_yellow)
         s = 'UNKNOWN'
-        if max_count > 0:
-            if max_count == count_red:
-                self.light = TrafficLight.RED
-                s = 'Red'
-            elif max_count == count_yellow:
-                self.light = TrafficLight.YELLOW
-                s = 'Yellow'
-            elif max_count == count_green:
-                self.light = TrafficLight.GREEN
-                s = 'Green'
+        if count_red < count_total - count_red:
+            self.light = TrafficLight.GREEN
+            s = 'GREEN'
+        else:
+            self.light = TrafficLight.RED
+            s = 'RED'
+        #if max_count > 0:
+            #if max_count == count_red:
+            #    self.light = TrafficLight.RED
+            #    s = 'Red'
+            #elif max_count == count_yellow:
+            #    self.light = TrafficLight.YELLOW
+            #    s = 'Yellow'
+            #elif max_count == count_green:
+            #    self.light = TrafficLight.GREEN
+            #    s = 'Green'
         rospy.loginfo('Light: %s', s)
         return self.light

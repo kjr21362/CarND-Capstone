@@ -53,6 +53,7 @@ class TLDetector(object):
         self.state_count = 0
         self.last_time = rospy.get_time()
         self.elipsed_time = 0
+        self.imageCounter = 1
 
         rospy.spin()
         
@@ -81,6 +82,7 @@ class TLDetector(object):
         #    return
         
         #self.elipsed_time = 0
+
         self.has_image = True
         self.camera_image = msg
         light_wp, state = self.process_traffic_lights()
@@ -129,14 +131,24 @@ class TLDetector(object):
         Returns:
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
         """
-        if(not self.has_image):
-            self.prev_light_loc = None
-            return False
+        # For testing
+        return light.state
 
+        #if(not self.has_image):
+        #    self.prev_light_loc = None
+        #    return False
+
+        """
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
 
         #Get classification
-        return self.light_classifier.get_classification(cv_image)
+        if(self.imageCounter % 3 == 0):
+            self.imageCounter = 1
+            return self.light_classifier.get_classification(cv_image)
+        else:
+            self.imageCounter += 1
+            return TrafficLight.UNKNOWN
+        """
 
     def process_traffic_lights(self):
         """Finds closest visible traffic light, if one exists, and determines its
@@ -156,12 +168,12 @@ class TLDetector(object):
                                                          self.pose.pose.position.y)
 
             #TODO find the closest visible traffic light (if one exists)
-            dist = float('inf')
+            dist = len(self.waypoints.waypoints)
             for i, light in enumerate(self.lights):
                 line = stop_line_positions[i]
                 cur_line_wp_idx = self.get_closest_waypoint(line[0], line[1])
                 d = cur_line_wp_idx - car_wp_idx
-                if d >= 0 and d < dist_threshold and d < dist:
+                if d >= 0 and d < dist:
                     dist = d
                     closest_light = light
                     light_wp_idx = cur_line_wp_idx
@@ -169,7 +181,7 @@ class TLDetector(object):
         if closest_light:
             state = self.get_light_state(closest_light)
             return light_wp_idx, state
-        self.waypoints = None
+        #self.waypoints = None
         
         return -1, TrafficLight.UNKNOWN
 
