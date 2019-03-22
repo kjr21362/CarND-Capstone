@@ -75,13 +75,11 @@ class TLDetector(object):
         Args:
             msg (Image): image from car-mounted camera
         """
-        #current_time = rospy.get_time()
-        #self.elipsed_time += (current_time - self.last_time)
-        #self.last_time = current_time
-        #if self.elipsed_time < 0.2:
-        #    return
+        if self.imageCounter % 4 != 0:
+            self.imageCounter += 1
+            return
         
-        #self.elipsed_time = 0
+        self.imageCounter = 1
         self.has_image = True
         self.camera_image = msg
         #if(self.imageCounter % 3 == 0):
@@ -168,7 +166,7 @@ class TLDetector(object):
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
         """
         # only classify lights within this waypoint distance
-        dist_threshold = 200
+        dist_threshold = 100
         closest_light = None
         light_wp_idx = None
         # List of positions that correspond to the line to stop in front of for a given intersection
@@ -183,7 +181,7 @@ class TLDetector(object):
                 line = stop_line_positions[i]
                 cur_line_wp_idx = self.get_closest_waypoint(line[0], line[1])
                 d = cur_line_wp_idx - car_wp_idx
-                if d >= 0 and d < dist:
+                if d >= 0 and d < dist_threshold and d < dist:
                     dist = d
                     closest_light = light
                     light_wp_idx = cur_line_wp_idx
