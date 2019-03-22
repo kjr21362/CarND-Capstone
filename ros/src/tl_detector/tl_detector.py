@@ -82,10 +82,14 @@ class TLDetector(object):
         #    return
         
         #self.elipsed_time = 0
-
         self.has_image = True
         self.camera_image = msg
+        #if(self.imageCounter % 3 == 0):
+        #    self.imageCounter = 1
         light_wp, state = self.process_traffic_lights()
+        #else:
+        #    self.imageCounter += 1
+        #    light_wp, state = self.last_wp, self.last_state
         
         # Testing with rosbag
         #light_wp = light_wp if state == TrafficLight.RED else -1
@@ -131,24 +135,30 @@ class TLDetector(object):
         Returns:
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
         """
-        # For testing
-        return light.state
-
-        #if(not self.has_image):
-        #    self.prev_light_loc = None
-        #    return False
-
         """
-        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
+        # For testing
+        if light.state == TrafficLight.RED:
+            rospy.loginfo('Light: RED')
+        elif light.state == TrafficLight.GREEN:
+            rospy.loginfo('Light: GREEN')
+        elif light.state == TrafficLight.YELLOW:
+            rospy.loginfo('Light: YELLOW')
+        elif light.state == TrafficLight.UNKNOWN:
+            rospy.loginfo('Light UNKNOWN')
+        return light.state
+        """
+        if(not self.has_image):
+            self.prev_light_loc = None
+            return False
 
         #Get classification
-        if(self.imageCounter % 3 == 0):
-            self.imageCounter = 1
-            return self.light_classifier.get_classification(cv_image)
-        else:
-            self.imageCounter += 1
-            return TrafficLight.UNKNOWN
-        """
+        #if(self.imageCounter % 3 == 0):
+        #    self.imageCounter = 1
+        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
+        return self.light_classifier.get_classification(cv_image)
+        #else:
+        #    self.imageCounter += 1
+        #    return self.last_state
 
     def process_traffic_lights(self):
         """Finds closest visible traffic light, if one exists, and determines its
@@ -180,6 +190,14 @@ class TLDetector(object):
                 
         if closest_light:
             state = self.get_light_state(closest_light)
+            if state == TrafficLight.RED:
+                rospy.loginfo('Light: RED')
+            elif state == TrafficLight.GREEN:
+                rospy.loginfo('Light: GREEN')
+            elif state == TrafficLight.YELLOW:
+                rospy.loginfo('Light: YELLOW')
+            elif state == TrafficLight.UNKNOWN:
+                rospy.loginfo('Light UNKNOWN')
             return light_wp_idx, state
         #self.waypoints = None
         
