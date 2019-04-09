@@ -25,7 +25,7 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
 LOOKAHEAD_WPS = 50  # Number of waypoints we will publish.
-PUBLISHING_RATE = 10  # Rate (Hz) of waypoint publishing
+PUBLISHING_RATE = 15  # Rate (Hz) of waypoint publishing
 MAX_DECEL = 0.5
 
 
